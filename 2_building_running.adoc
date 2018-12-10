@@ -91,9 +91,13 @@ $ java -jar target/boot-demo-0.0.1.jar
 $ curl localhost:8080
 ----
 
-Next create the docker image, first double check that you are still connected to the correct Docker daemon
+Next create the docker image, first double check that you are still connected to the correct Docker daemon.
+
+Note :
+If using minikube, make sure you execute eval $(minikube docker-env) so docker knows to use the instance inside the minikube 
 
 ----
+$ eval $(minikube docker-env)
 $ docker images | grep 9steps
 $ docker build -t 9stepsawesome/myboot:v1 .
 ----

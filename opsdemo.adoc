@@ -1,0 +1,18 @@
+ifndef::codedir[:codedir: code]
+ifndef::imagesdir[:imagesdir: images]
+
+
+== Setup
+
+=== Lightweight deployment 
+
+=== OOM Killer 
+
+=== Zero Down Time Deployment
+
+=== Zero Hit Deployment
+
+=== Effortless Roll-back 
+
+
+

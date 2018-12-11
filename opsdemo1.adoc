@@ -28,6 +28,13 @@ link:1_installation_started.adoc[Install instruction]
 
 === Create NameSpace
 ----
+$ kubectl get namespaces
+NAME          STATUS   AGE
+default       Active   29m
+kube-public   Active   29m
+kube-system   Active   29m
+
+
 $ kubectl create namespace opsdemo
 $ kubectl get namespaces
 NAME          STATUS    AGE
@@ -35,6 +42,16 @@ default       Active    22h
 opsdemo       Active    6m
 kube-public   Active    21h
 kube-system   Active    22h
+
+$ kubens
+default
+kube-public
+kube-system
+opsdemo
+
+$ kubens opsdemo
+Context "minikube" modified.
+Active namespace is "opsdemo".
 ----
 
 === Build the initial docker image
@@ -412,7 +429,7 @@ Aloha from Spring Boot! 1 on myboot-859cbbfb98-4rvl8
 Delete the Demo namespace, this will remove all the running containers and services 
 [source,bash]
 ----
-$ kubectl delete namespaces demo
+$ kubectl delete namespaces opsdemo
   namespace "demo" deleted
 ----
 

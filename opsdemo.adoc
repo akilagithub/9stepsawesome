@@ -90,8 +90,10 @@ $ kubectl create -f kubefiles/myboot-deployment.yml
 check what happened on another window 
 
 
+
+
 ====
-[source,bash,linenums,highlight='9']
+[source,bash,linenums,highlight='7-9']
 ----
 # watch kubectl get all 
 NAME                         READY   STATUS    RESTARTS   AGE
@@ -105,11 +107,12 @@ deployment.apps/myboot   1         1         1            1           4s
 
 NAME                               DESIRED   CURRENT   READY   AGE
 replicaset.apps/myboot-5d966db4f   1         1         1       4s
-====
-----
-----
 
-Create a Service
+----
+====
+
+Create a Service 
+This service acts as an intelligent HAProxy / load balancer to send http requests to the application nodes 
 
 [source,bash]
 ----

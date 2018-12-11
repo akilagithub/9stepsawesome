@@ -161,7 +161,7 @@ do
 done
 ----
 
-Let's scale up the application to 3 replicas, there are several possible ways to achieve this result.
+Let's scale up the application to 2 replicas, there are several possible ways to achieve this result.
 
 You can edit the myboot-deployment.yml, updating replicas 
 [source,bash]
@@ -171,14 +171,13 @@ You can edit the myboot-deployment.yml, updating replicas
 $ kubectl replace -f kubefiles/myboot-deployment.yml
 ----
 
-Or use the kubectl scale command
+Or use the kubectl scale command, now make it 3 replicas and see what happens
 
 [source,bash]
 ----
 $ kubectl scale --replicas=3 deployment/myboot
 ----
 
-Kubernetes also provides you a way to 'patch' or to live edit the deployment yaml file by using kubectl edit command 
 
 
 === Self-healing infrastructure 
@@ -211,7 +210,7 @@ Compile & Build the fat jar
 $ mvn clean package
 ----
 
-ou can test with "java -jar target/boot-demo-0.0.1.jar" and "curl localhost:8080".  Ideally, you would have unit tests executed with "mvn test" as well.
+You can test with "java -jar target/boot-demo-0.0.1.jar" and "curl localhost:8080".  Ideally, you would have unit tests executed with "mvn test" as well.
 
 Build the new docker image with a v2 tag
 [source,bash]
@@ -221,13 +220,18 @@ $ docker images | grep myboot
 ----
 
 Rollout the update
+====
 [source,bash]
 ----
 # in a separate window, watch kubectl get all 
+$ watch kubectl get all 
+----
+====
 
+Instruct kubernetes to switch out the docker image to v2 
+----
 $ kubectl set image deployment/myboot myboot=9stepsawesome/myboot:v2
 ----
-
 
 from the curl pulling you'll see that nodes will drop off and new nodes will come online 
 
@@ -292,7 +296,7 @@ metadata:
     app: myboot
   name: myboot
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: myboot
@@ -307,8 +311,6 @@ spec:
         ports:
           - containerPort: 8080
         envFrom:
-        - configMapRef:
-            name: my-config
         resources:
           requests: 
             memory: "300Mi" 
@@ -336,14 +338,6 @@ and replace the current Deployment in the current environment
 ps. Do a diff of the two files and see the difference 
 
 
-Create a ConfigMap from a directory called config, and then replace the current deployment with the new yaml file that specifies the liveness/ready probes 
-
-----
-$ kubectl create cm my-config --from-env-file=config/some.properties
-----
-
-TIP: Kubernetes ConfigMap allows you to leave property and configuration outside of the container, a very important concept of the 12 factors app.  For more info, check out Burr's original demo, chapter 5 - configuration. 
-----
 
 $ kubectl replace -f kubefiles/myboot-deployment-liveready.yml
 ----
@@ -378,13 +372,7 @@ $ kubectl describe deployment/myboot
 $ kubectl scale deployment/myboot --replicas=2
 ----
 
-Make sure you have v2 of the Spring Boot image ready - Bonjour
-
-----
-$ docker build -t 9stepsawesome/myboot:v2 .
-----
-
-now rollout the update
+now rollout the update using version 2 
 
 ----
 $ kubectl set image deployment/myboot myboot=9stepsawesome/myboot:v2

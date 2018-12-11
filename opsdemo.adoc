@@ -74,7 +74,7 @@ spec:
     spec:
       containers:
       - name: myboot
-        image: 9stepsawesome/myboot:v1 <1>
+        image: 9stepsawesome/myboot:v1 // <1>
         ports:
           - containerPort: 8080
 

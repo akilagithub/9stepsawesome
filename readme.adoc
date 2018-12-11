@@ -5,7 +5,8 @@ This is a custom fork of the Kubernetes - 9 steps to awesome presentation by Bur
 
 See below
 
-link:opsdemo.adoc[Super condensed demo for the impatient]
+link:opsdemo1.adoc[Super condensed demo for the impatient: Part 1] 
+
 
 
 ## Original material preserved below 

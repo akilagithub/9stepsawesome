@@ -1,9 +1,6 @@
 ifndef::codedir[:codedir: code]
 ifndef::imagesdir[:imagesdir: images]
 
-:source-highlighter: pygments
-:pygments-style: emacs
-:icons: font
 
 
 = OpsDemo
@@ -19,6 +16,8 @@ This demo assumes you have setup the following:
 * Minikube
 * kubens
 * Dockers
+* moo
+
 
 
 

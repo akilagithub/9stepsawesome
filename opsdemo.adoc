@@ -16,7 +16,7 @@ This demo assumes you have setup the following:
 * Minikube
 * kubens
 * Dockers
-* moo
+* jq 
 
 
 
@@ -296,7 +296,7 @@ metadata:
     app: myboot
   name: myboot
 spec:
-  replicas: 3
+  replicas: 2
   selector:
     matchLabels:
       app: myboot
@@ -335,10 +335,10 @@ spec:
 
 and replace the current Deployment in the current environment
 
-ps. Do a diff of the two files and see the difference 
+[TIP]
+ Do a diff of the two files and see the difference 
 
-
-
+----
 $ kubectl replace -f kubefiles/myboot-deployment-liveready.yml
 ----
 
@@ -349,7 +349,7 @@ do a describe to see the new probes in place.
 [source,bash]
 ----
 $ kubectl describe deployment/myboot
-...
+
    myboot:
     Image:      9stepsawesome/myboot:v1
     Port:       8080/TCP
@@ -364,12 +364,11 @@ $ kubectl describe deployment/myboot
     Readiness:  http-get http://:8080/health delay=10s timeout=1s period=3s #success=1 #failure=3
     Environment Variables from:
       my-config   ConfigMap  Optional: false
-...
 ----
 
-
+Instruct kubernetes to scale to 3 nodes 
 ----
-$ kubectl scale deployment/myboot --replicas=2
+$ kubectl scale deployment/myboot --replicas=3
 ----
 
 now rollout the update using version 2 
@@ -381,9 +380,9 @@ $ kubectl set image deployment/myboot myboot=9stepsawesome/myboot:v2
 and there will no errors
 
 ----
-Hello from Spring Boot! 115 on myboot-859cbbfb98-lnc8q
-Hello from Spring Boot! 116 on myboot-859cbbfb98-lnc8q
-Hello from Spring Boot! 117 on myboot-859cbbfb98-lnc8q
+Aloha from Spring Boot! 115 on myboot-859cbbfb98-lnc8q
+Aloha from Spring Boot! 116 on myboot-859cbbfb98-lnc8q
+Aloha from Spring Boot! 117 on myboot-859cbbfb98-lnc8q
 Bonjour from Spring Boot! 0 on myboot-5b686c586f-ccv5r
 Bonjour from Spring Boot! 1 on myboot-5b686c586f-ccv5r
 ----
@@ -398,11 +397,61 @@ $ kubectl rollout undo deployment/myboot
 Bonjour from Spring Boot! 30 on myboot-5b686c586f-ccv5r
 Bonjour from Spring Boot! 31 on myboot-5b686c586f-ccv5r
 Bonjour from Spring Boot! 32 on myboot-5b686c586f-ccv5r
-Hello from Spring Boot! 0 on myboot-859cbbfb98-4rvl8
-Hello from Spring Boot! 1 on myboot-859cbbfb98-4rvl8
+Aloha from Spring Boot! 0 on myboot-859cbbfb98-4rvl8
+Aloha from Spring Boot! 1 on myboot-859cbbfb98-4rvl8
+----
+
+
+== Lab Teardown 
+
+Delete the Demo namespace, this will remove all the running containers and services 
+[source,bash]
+----
+$ kubectl delete namespaces demo
+  namespace "demo" deleted
+----
+
+Shutdown minikube if you'd like 
+[source,bash]
+----
+$ minikube stop
 ----
 
 
 
+== Troubleshooting 
+
+### Minikube won't start
+
+If minikube just sits at "Starting VM..."
+This probably means minikube did not stop properly. 
+Crank up the verhbose mode to 3 and see whrere it actually gets stuck 
+[source,bash]
+----
+minikube start -v3
+Starting local Kubernetes v1.10.0 cluster...
+Starting VM...
+(minikube) Using UUID 20641208-fc0a-11e8-b0b9-f40f2435428b
+(minikube) Generated MAC 36:de:a0:aa:93:75
+(minikube) Starting with cmdline: loglevel=3 user=docker console=ttyS0 console=tty0 noembed nomodeset norestore waitusb=10 systemd.legacy_systemd_cgroup_controller=yes base host=minikube
+Waiting for SSH to be available...
+
+----
+
+If this is matches the symptom, delete the vm-driver VM machine PID (applicable to Windows and Mac, example below is for mac using Hyperkit) 
+
+[source,bash]
+----
+$ rm ~/.minikube/machines/minikube/hyperkit.pid
+----
+
+If the step above does not solve the issue, go for the nuclear option 
+
+[source,bash]
+----
+$ minikube delete
+Deleting local Kubernetes cluster...
+Machine deleted.
+----
 
 

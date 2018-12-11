@@ -91,7 +91,7 @@ check what happened on another window
 
 
 ====
-[source,bash]
+[source,bash,linenums,highlight='9']
 ----
 # watch kubectl get all 
 NAME                         READY   STATUS    RESTARTS   AGE

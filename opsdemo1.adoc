@@ -13,10 +13,15 @@ This demo is originally forked from Burr Sutter's excellent https://github.com/b
 == Setup
 This demo assumes you have setup the following: 
 
+link:1_installation_started.adoc[Install instruction]
+
 * Minikube
 * kubens
 * Dockers
 * jq 
+* git 
+* JDK
+* Apache Maven
 
 
 

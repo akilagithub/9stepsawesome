@@ -2,11 +2,165 @@ ifndef::codedir[:codedir: code]
 ifndef::imagesdir[:imagesdir: images]
 
 
+= OpsDemo
+
 == Setup
+This demo assumes you have setup the following: 
 
-=== Lightweight deployment 
+* Minikube
+* kubens
+* Dockers
 
-=== OOM Killer 
+
+
+=== Create NameSpace
+----
+$ kubectl create namespace opsdemo
+$ kubectl get namespaces
+NAME          STATUS    AGE
+default       Active    22h
+opsdemo       Active    6m
+kube-public   Active    21h
+kube-system   Active    22h
+----
+
+=== Build the initial docker image
+----
+$ eval $(minikube docker-env)
+$ docker images | grep 9steps
+$ docker build -t 9stepsawesome/myboot:v1 .
+----
+
+=== Test that docker image
+----
+$ minikube ip
+$ docker run -it -p 8080:8080 9stepsawesome/myboot:v1 
+$ curl $(minikube ip):8080
+----
+
+== Lightweight deployment Demo
+
+Now that we have a docker image, we can quickly spin up a 2 node app server using Kubernetes 
+
+Review the content of the Kubefile 
+----
+$ cat kubefiles/myboot-deployment.yml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: myboot
+  name: myboot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myboot
+  template:
+    metadata:
+      labels:
+        app: myboot
+    spec:
+      containers:
+      - name: myboot
+        image: 9stepsawesome/myboot:v1
+        ports:
+          - containerPort: 8080
+
+----
+
+
+note it's using the docker image we built earlier 9stepsawesome/myboot:v1 
+
+----
+# tell kubernetes to create a deployment of app servers 
+$ kubectl create -f kubefiles/myboot-deployment.yml
+----
+
+check what happened on another window 
+====
+----
+# watch kubectl get all 
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/myboot-5d966db4f-vhfwq   1/1     Running   0          4s
+
+NAME                 TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+service/kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   16s
+
+NAME                     DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/myboot   1         1         1            1           4s
+
+NAME                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/myboot-5d966db4f   1         1         1       4s
+====
+----
+----
+
+Create a Service
+----
+$ kubectl create -f kubefiles/myboot-service.yml 
+----
+
+observe what happened in the other window
+====
+----
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/myboot-5d966db4f-vhfwq   1/1     Running   0          3m
+
+NAME                 TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes   ClusterIP      10.96.0.1      <none>        443/TCP          3m
+service/myboot       LoadBalancer   10.101.41.51   <pending>     8080:31416/TCP   20s
+
+NAME                     DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/myboot   1         1         1            1           3m
+
+NAME                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/myboot-5d966db4f   1         1         1       3m
+----
+====
+
+Get the nodePort
+----
+$ kubectl get service/myboot -o jsonpath="{.spec.ports[*].nodePort}"
+----
+
+Curl that url + nodePort
+----
+$ curl $(minikube ip):$(kubectl get service/myboot -o jsonpath="{.spec.ports[*].nodePort}")
+----
+
+Perhaps build a little loop to curl that endpoint
+[source, bash]
+----
+while true
+do 
+  curl $(minikube ip):$(kubectl get service/myboot -o jsonpath="{.spec.ports[*].nodePort}")
+  sleep .5;
+done
+----
+
+Let's scale up the application to 3 replicas, there are several possible ways to achieve this result.
+
+You can edit the myboot-deployment.yml, updating replicas 
+----
+
+# edit the myboot-deployment.yml and set replica to 2 
+$ kubectl replace -f kubefiles/myboot-deployment.yml
+----
+
+Or use the kubectl scale command
+----
+$ kubectl scale --replicas=3 deployment/myboot
+----
+
+Kubernetes also provides you a way to 'patch' or to live edit the deployment yaml file by using kubectl edit command 
+
+
+=== Self-healing infrastructure - OOM Remediation 
+Java applications 
+
+
+
 
 === Zero Down Time Deployment
 

@@ -74,12 +74,12 @@ spec:
     spec:
       containers:
       - name: myboot
-        image: 9stepsawesome/myboot:v1 // <1>
+        image: 9stepsawesome/myboot:v1 
         ports:
           - containerPort: 8080
 
 ----
-<1> Docker image created earlier 
+
 
 note it's using the docker image we built earlier 9stepsawesome/myboot:v1 
 

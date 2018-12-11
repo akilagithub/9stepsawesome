@@ -200,9 +200,9 @@ $ kubectl delete pod $(kubectl get pods -o json | jq -r '.items[0].metadata.name
 === Fast Deployment (near zero down time)
 
 
-First, update MyRESTController.java so that it prints something else 
+Update MyRESTController.java
 ----
-greeting = environment.getProperty("GREETING","DevHero");
+greeting = environment.getProperty("GREETING","Bonjour");
 ----
 
 Compile & Build the fat jar

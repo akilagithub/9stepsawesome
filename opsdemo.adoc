@@ -156,15 +156,88 @@ $ kubectl scale --replicas=3 deployment/myboot
 Kubernetes also provides you a way to 'patch' or to live edit the deployment yaml file by using kubectl edit command 
 
 
-=== Self-healing infrastructure - OOM Remediation 
-Java applications 
+=== Self-healing infrastructure 
+When your application has issues and instances would die sporadically, manual restart is a pain. Kubernetes watches the instances and restarts them if any of them dies unexpectedly 
+
+----
+# get the NAME of first pod 
+$ kubectl get pods -o json | jq -r '.items[0].metadata.name' 
+
+# kill the first pod and observe 
+$ kubectl delete pod $(kubectl get pods -o json | jq -r '.items[0].metadata.name')
+
+----
 
 
 
+=== Fast Deployment (near zero down time)
 
-=== Zero Down Time Deployment
 
-=== Zero Hit Deployment
+First, update MyRESTController.java so that it prints something else 
+----
+greeting = environment.getProperty("GREETING","DevHero");
+----
+
+Compile & Build the fat jar
+----
+# cd into springboot directory 
+$ mvn clean package
+----
+
+ou can test with "java -jar target/boot-demo-0.0.1.jar" and "curl localhost:8080".  Ideally, you would have unit tests executed with "mvn test" as well.
+
+Build the new docker image with a v2 tag
+----
+$ docker build -t 9stepsawesome/myboot:v2 .
+$ docker images | grep myboot
+----
+
+Rollout the update
+----
+# in a separate window, watch kubectl get all 
+
+$ kubectl set image deployment/myboot myboot=9stepsawesome/myboot:v2
+----
+
+
+from the curl pulling you'll see that nodes will drop off and new nodes will come online 
+
+----
+curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
+DevHero from Spring Boot! 0 on myboot-5955897c9b-klsvz
+curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
+DevHero from Spring Boot! 1 on myboot-5955897c9b-klsvz
+DevHero from Spring Boot! 2 on myboot-5955897c9b-klsvz
+DevHero from Spring Boot! 0 on myboot-5955897c9b-lxz77
+DevHero from Spring Boot! 1 on myboot-5955897c9b-lxz77
+DevHero from Spring Boot! 2 on myboot-5955897c9b-lxz77
+----
+
+
+
+=== Effortless Roll-back 
+
+Let's undo the rollout 
+----
+$ kubectl rollout undo deployment/myboot 
+----
+
+observe in the curl window 
+----
+curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
+curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
+curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
+Helloooo from Spring Boot! 0 on myboot-5d966db4f-d784z
+Helloooo from Spring Boot! 1 on myboot-5d966db4f-d784z
+Helloooo from Spring Boot! 0 on myboot-5d966db4f-z2b4d
+Helloooo from Spring Boot! 2 on myboot-5d966db4f-d784z
+----
+
+
+
+=== Zero Downtime Deployment
+
+
 
 === Effortless Roll-back 
 

@@ -1,0 +1,13 @@
+ifndef::codedir[:codedir: code]
+ifndef::imagesdir[:imagesdir: images]
+
+
+
+= OpsDemo Part 2
+
+[TIP]
+==== 
+This demo is originally forked from Burr Sutter's excellent https://github.com/burrsutter/9stepsawesome. Refactored for extra concciseness for a lunch & learn demo session. If you have 2-3 hours to spare, please check out the original - Burr covers a lot more topic. 
+====
+
+== Setup

@@ -2,12 +2,11 @@ ifndef::codedir[:codedir: code]
 ifndef::imagesdir[:imagesdir: images]
 
 
-
 = OpsDemo
 
 [TIP]
 ==== 
-This demo is originally forked from Burr Sutter's excellent https://github.com/burrsutter/9stepsawesome. Refactored for extra concciseness for a lunch & learn demo session. If you have 2-3 hours to spare, please check out the original - Burr covers a lot more topic. 
+This demo is originally forked from Burr Sutter's excellent presentation https://github.com/burrsutter/9stepsawesome. Refactored for extra conciseness targeting a lunch & learn demo session. If you have 2-3 hours to spare, please check out the original - Burr covers a lot more topic. 
 ====
 
 == Setup
@@ -25,8 +24,9 @@ link:1_installation_started.adoc[Install instruction]
 
 
 
+=== Create Demo Name Space
 
-=== Create NameSpace
+[source,bash]
 ----
 $ kubectl get namespaces
 NAME          STATUS   AGE
@@ -55,13 +55,26 @@ Active namespace is "opsdemo".
 ----
 
 === Build the initial docker image
+
+[source,bash]
 ----
+# tell your host's docker to use the one inside minikube VM
 $ eval $(minikube docker-env)
-$ docker images | grep 9steps
+
+# build the fat jar 
+$ cd hello/springboot
+$ mvn clean package
+
+# test the fat jar to make sure it works 
+$ java -jar target/boot-demo-0.0.1.jar
+$ curl localhost:8080
+
+# make the docker image, tag it as v1 (prints 'aloha')
 $ docker build -t 9stepsawesome/myboot:v1 .
 ----
 
-=== Test that docker image
+=== Test the docker image
+[source,bash]
 ----
 $ minikube ip
 $ docker run -it -p 8080:8080 9stepsawesome/myboot:v1 
@@ -74,9 +87,9 @@ Now that we have a docker image, we can quickly spin up a 2 node app server usin
 
 Review the content of the Kubefile 
 
+.kubefiles/myboot-deployment.yml
 [source,yaml,linenums]
 ----
-$ cat kubefiles/myboot-deployment.yml
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -102,7 +115,7 @@ spec:
 ----
 
 
-note it's using the docker image we built earlier 9stepsawesome/myboot:v1 
+Note it's using the docker image we built earlier 9stepsawesome/myboot:v1 
 
 [source,bash]
 ----
@@ -111,7 +124,6 @@ $ kubectl create -f kubefiles/myboot-deployment.yml
 ----
 
 check what happened on another window 
-
 
 
 
@@ -203,7 +215,8 @@ $ kubectl scale --replicas=3 deployment/myboot
 
 
 === Self-healing infrastructure 
-When your application has issues and instances would die sporadically, manual restart is a pain. Kubernetes watches the instances and restarts them if any of them dies unexpectedly 
+When your application has issues and instances would die sporadically, manual restart is a pain. 
+Kubernetes watches the instances and restarts them if any of them dies unexpectedly 
 
 [source,bash]
 ----
@@ -260,13 +273,13 @@ from the curl pulling you'll see that nodes will drop off and new nodes will com
 ====
 ----
 curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
-DevHero from Spring Boot! 0 on myboot-5955897c9b-klsvz
+Aloha from Spring Boot! 0 on myboot-5955897c9b-klsvz
 curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
-DevHero from Spring Boot! 1 on myboot-5955897c9b-klsvz
-DevHero from Spring Boot! 2 on myboot-5955897c9b-klsvz
-DevHero from Spring Boot! 0 on myboot-5955897c9b-lxz77
-DevHero from Spring Boot! 1 on myboot-5955897c9b-lxz77
-DevHero from Spring Boot! 2 on myboot-5955897c9b-lxz77
+Bonjour from Spring Boot! 1 on myboot-5955897c9b-klsvz
+Bonjour from Spring Boot! 2 on myboot-5955897c9b-klsvz
+Bonjour from Spring Boot! 0 on myboot-5955897c9b-lxz77
+Bonjour from Spring Boot! 1 on myboot-5955897c9b-lxz77
+Bonjour from Spring Boot! 2 on myboot-5955897c9b-lxz77
 ----
 ====
 
@@ -285,19 +298,18 @@ observe in the curl window
 curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
 curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
 curl: (7) Failed to connect to 192.168.64.10 port 31416: Connection refused
-Helloooo from Spring Boot! 0 on myboot-5d966db4f-d784z
-Helloooo from Spring Boot! 1 on myboot-5d966db4f-d784z
-Helloooo from Spring Boot! 0 on myboot-5d966db4f-z2b4d
-Helloooo from Spring Boot! 2 on myboot-5d966db4f-d784z
+Aloha from Spring Boot! 0 on myboot-5d966db4f-d784z
+Aloha from Spring Boot! 1 on myboot-5d966db4f-d784z
+Aloha from Spring Boot! 0 on myboot-5d966db4f-z2b4d
+Aloha from Spring Boot! 2 on myboot-5d966db4f-d784z
 ----
 
 
 
 === Fast & Zero Downtime Deployment
-The trick to enable zero downtime deployment is for the application to pass a hint to kubernetes that the application code is not just 'live' but 'ready' to take on traffic 
+The trick to enable zero downtime deployment is to send traffic to new application instances only when they are [red yellow-background]*UP* and [red yellow-background]*READY* to process traffic, and [underline]#gracefully# shutdown old nodes in a rolling fashion. 
 
-These are implemented as 'liveness' and 'ready' probe 
-
+In Kubernetes, we can achieve this in just 2 lines of YAML config. 
 
 To prepare the demo, let's replace the current deployment with a slightly updated one 
 [source,bash]
@@ -450,7 +462,7 @@ This probably means minikube did not stop properly.
 Crank up the verhbose mode to 3 and see whrere it actually gets stuck 
 [source,bash]
 ----
-minikube start -v3
+$ minikube start -v3
 Starting local Kubernetes v1.10.0 cluster...
 Starting VM...
 (minikube) Using UUID 20641208-fc0a-11e8-b0b9-f40f2435428b

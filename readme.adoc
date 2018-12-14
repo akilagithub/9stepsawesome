@@ -7,6 +7,8 @@ See below
 
 link:opsdemo1.adoc[Super condensed demo for the impatient: Part 1] 
 
+https://www.youtube.com/watch?v=Y0Bs403nSDA[Link to youtube video]
+
 
 
 ## Original material preserved below 
